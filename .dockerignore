@@ -1,0 +1,14 @@
+# Only target/app.jar is needed inside the image - keep the build context small
+.git
+.github
+.vscode
+.idea
+ansible
+k8s
+src
+*.md
+pom.xml
+target/classes
+target/test-classes
+target/surefire-reports
+target/maven-*

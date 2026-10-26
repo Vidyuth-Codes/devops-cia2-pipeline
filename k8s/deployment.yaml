@@ -1,0 +1,46 @@
+# Tells Kubernetes WHAT to run: 2 copies (pods) of our container.
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: devops-app
+  labels:
+    app: devops-app
+spec:
+  replicas: 2                      # two pods -> one keeps serving while the other updates
+  selector:
+    matchLabels:
+      app: devops-app
+  strategy:
+    type: RollingUpdate            # replace pods one at a time, no downtime
+    rollingUpdate:
+      maxUnavailable: 0
+      maxSurge: 1
+  template:
+    metadata:
+      labels:
+        app: devops-app
+    spec:
+      containers:
+        - name: devops-app
+          image: IMAGE_PLACEHOLDER   # Ansible replaces this with <acr>.azurecr.io/devops-app:<commit-sha>
+          ports:
+            - containerPort: 8080
+          resources:
+            requests:
+              cpu: 100m
+              memory: 256Mi
+            limits:
+              cpu: 500m
+              memory: 512Mi
+          readinessProbe:            # only send traffic once the app answers /health
+            httpGet:
+              path: /health
+              port: 8080
+            initialDelaySeconds: 15
+            periodSeconds: 5
+          livenessProbe:             # restart the container if it stops answering
+            httpGet:
+              path: /health
+              port: 8080
+            initialDelaySeconds: 40
+            periodSeconds: 10

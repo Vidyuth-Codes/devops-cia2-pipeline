@@ -1,0 +1,13 @@
+# Tells Kubernetes HOW to reach the pods: an Azure Load Balancer with a public IP.
+apiVersion: v1
+kind: Service
+metadata:
+  name: devops-app-service
+spec:
+  type: LoadBalancer
+  selector:
+    app: devops-app
+  ports:
+    - protocol: TCP
+      port: 80          # port people open in the browser
+      targetPort: 8080  # port the Spring Boot app listens on
