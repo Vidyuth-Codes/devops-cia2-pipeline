@@ -1,5 +1,6 @@
 # ==========================================================================
 # CI/CD pipeline: runs automatically on every push to the main branch.
+#   0. secret-scan     -> Gitleaks scans code + history for leaked secrets
 #   1. build-and-test  -> Maven compiles the code and runs the JUnit tests
 #   2. docker          -> builds the Docker image and pushes it to Azure ACR
 #   3. deploy          -> Ansible deploys the new image to Azure AKS
@@ -13,10 +14,10 @@ on:
   push:
     branches:
       - main
-  workflow_dispatch:          # also allows a manual "Run workflow" button
+  workflow_dispatch: # also allows a manual "Run workflow" button
 
 permissions:
-  id-token: write             # needed to log in to Azure with OIDC (no stored password)
+  id-token: write # needed to log in to Azure with OIDC (no stored password)
   contents: read
 
 env:
@@ -26,9 +27,25 @@ env:
   IMAGE_NAME: devops-app
 
 jobs:
+  # ------------------------------------------------------------------ 0
+  secret-scan:
+    name: 0. Secret Scan (Gitleaks)
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout source code (full history)
+        uses: actions/checkout@v5
+        with:
+          fetch-depth: 0 # gitleaks scans the commit history, not just the latest files
+
+      - name: Scan for leaked secrets (passwords, API keys, tokens)
+        uses: gitleaks/gitleaks-action@v2
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }} # provided automatically by GitHub
+
   # ------------------------------------------------------------------ 1
   build-and-test:
     name: 1. Build & Test (Maven)
+    needs: secret-scan
     runs-on: ubuntu-latest
     steps:
       - name: Checkout source code
@@ -38,7 +55,7 @@ jobs:
         uses: actions/setup-java@v5
         with:
           distribution: temurin
-          java-version: '17'
+          java-version: "17"
           cache: maven
 
       - name: Compile, run unit tests and package the jar
