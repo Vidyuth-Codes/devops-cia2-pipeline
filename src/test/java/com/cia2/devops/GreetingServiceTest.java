@@ -13,7 +13,7 @@ class GreetingServiceTest {
     @Test
     void versionIsTheExpectedRelease() {
         // DEMO: update this together with APP_VERSION, otherwise the pipeline stops here
-        assertEquals("Version 4", service.getVersion());
+        assertEquals("Version 5", service.getVersion());
     }
 
     @Test

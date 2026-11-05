@@ -10,7 +10,7 @@ import org.springframework.stereotype.Service;
 @Service
 public class GreetingService {
 
-    public static final String APP_VERSION = "Version 4";
+    public static final String APP_VERSION = "Version 5";
 
     public String getVersion() {
         return APP_VERSION;
